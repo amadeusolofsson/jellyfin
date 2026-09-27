@@ -378,5 +378,39 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return hasChanges;
         }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Gets the parental rating score for the episode, taking into account the parent series rating.
+        /// </summary>
+        /// <remarks>
+        /// An episode's effective rating cannot be less restrictive than its parent series rating.
+        /// If both the episode and the series have a rating, the most restrictive score is returned.
+        /// </remarks>
+        /// <returns>The most restrictive <see cref="ParentalRatingScore"/>, or <c>null</c> if neither has a rating.</returns>
+        public override ParentalRatingScore GetParentalRatingScore()
+        {
+            var episodeRating = base.GetParentalRatingScore();
+            var seriesRating = Series?.GetParentalRatingScore();
+
+            if (episodeRating is null)
+            {
+                return seriesRating;
+            }
+
+            if (seriesRating is null)
+            {
+                return episodeRating;
+            }
+
+            // Compare scores: If equal, compare sub-scores to determine the most restrictive rating.
+            if (seriesRating.Score > episodeRating.Score ||
+                (seriesRating.Score == episodeRating.Score && (seriesRating.SubScore ?? 0) > (episodeRating.SubScore ?? 0)))
+            {
+                return seriesRating;
+            }
+
+            return episodeRating;
+        }
     }
 }

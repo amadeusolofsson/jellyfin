@@ -1640,7 +1640,7 @@ namespace MediaBrowser.Controller.Entities
             return !maxAllowedSubRating.HasValue || (ratingScore.SubScore ?? 0) <= maxAllowedSubRating.Value;
         }
 
-        public ParentalRatingScore GetParentalRatingScore()
+        public virtual ParentalRatingScore GetParentalRatingScore()
         {
             var rating = CustomRatingForComparison;
 

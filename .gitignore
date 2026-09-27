@@ -281,3 +281,11 @@ mono_crash.*.json
 # Devcontainer temp files
 .devcontainer/devcontainer-lock.json
 dotnet/
+
+
+dev-config/
+dev-data/
+dev-log/
+Jellyfin.Server/test_cache
+Jellyfin.Server/test_config
+Jellyfin.Server/test_data
