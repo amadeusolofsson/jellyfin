@@ -151,9 +151,8 @@ public class EpisodeTests
 
         episode.OnMetadataChanged();
 
-        var user = new User
+        var user = new User("test", "test", "test")
         {
-            Username = "test",
             MaxParentalRatingScore = userMaxRating
         };
 
