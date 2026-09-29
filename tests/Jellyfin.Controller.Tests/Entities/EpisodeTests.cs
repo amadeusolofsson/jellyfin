@@ -149,8 +149,11 @@ public class EpisodeTests
             OfficialRating = episodeRating
         };
 
-        var user = new User("test", "test", "test")
+        episode.OnMetadataChanged();
+
+        var user = new User
         {
+            Username = "test",
             MaxParentalRatingScore = userMaxRating
         };
 
