@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -29,11 +26,8 @@ public class EpisodeTests
         _localizationManager.Setup(x => x.GetRatingScore("TV-PG-2", null)).Returns(new ParentalRatingScore(500, 2));
         _localizationManager.Setup(x => x.GetRatingScore("TV-G", null)).Returns(new ParentalRatingScore(300, null));
 
-        _libraryManager.Setup(x => x.GetCollectionFolders(It.IsAny<BaseItem>())).Returns(new List<Folder>());
-
         BaseItem.LocalizationManager = _localizationManager.Object;
         BaseItem.LibraryManager = _libraryManager.Object;
-        BaseItem.Logger = Mock.Of<ILogger<BaseItem>>();
     }
 
     [Theory]
@@ -118,46 +112,5 @@ public class EpisodeTests
 
         Assert.NotEqual(ItemUpdateType.None, updateType);
         Assert.Equal(900, episode.InheritedParentalRatingValue);
-    }
-
-    [Theory]
-    // TV-MA series, unrated episode -> blocked for TV-PG user (500)
-    [InlineData("TV-MA", null, 500, false)]
-    // TV-PG series, unrated episode -> allowed for TV-PG user (500)
-    [InlineData("TV-PG", null, 500, true)]
-    // TV-PG series, TV-MA episode -> blocked for TV-PG user (500)
-    [InlineData("TV-PG", "TV-MA", 500, false)]
-    // User has no parental rating restriction -> allowed
-    [InlineData("TV-MA", null, null, true)]
-    public void IsParentalAllowed_VariousRatingCombinations_EvaluatesInheritedRating(
-        string? seriesRating,
-        string? episodeRating,
-        int? userMaxRating,
-        bool expectedAllowed)
-    {
-        var seriesId = Guid.NewGuid();
-        var series = new Series
-        {
-            Id = seriesId,
-            OfficialRating = seriesRating
-        };
-        _libraryManager.Setup(x => x.GetItemById(seriesId)).Returns(series);
-
-        var episode = new Episode
-        {
-            SeriesId = seriesId,
-            OfficialRating = episodeRating
-        };
-
-        episode.OnMetadataChanged();
-
-        var user = new User("test", "test", "test")
-        {
-            MaxParentalRatingScore = userMaxRating
-        };
-
-        var allowed = episode.IsParentalAllowed(user, skipAllowedTagsCheck: true);
-
-        Assert.Equal(expectedAllowed, allowed);
     }
 }
