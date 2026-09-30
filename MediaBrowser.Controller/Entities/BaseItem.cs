@@ -1599,25 +1599,27 @@ namespace MediaBrowser.Controller.Entities
 
             var maxAllowedRating = user.MaxParentalRatingScore;
             var maxAllowedSubRating = user.MaxParentalRatingSubScore;
+            var rating = CustomRatingForComparison;
 
-            var ratingScore = GetParentalRatingScore();
+            if (string.IsNullOrEmpty(rating))
+            {
+                rating = OfficialRatingForComparison;
+            }
+
+            if (string.IsNullOrEmpty(rating))
+            {
+                Logger.LogDebug("{0} has no parental rating set.", Name);
+                return !GetBlockUnratedValue(user);
+            }
+
+            var ratingScore = LocalizationManager.GetRatingScore(rating);
 
             // Could not determine rating level
             if (ratingScore is null)
             {
                 var isAllowed = !GetBlockUnratedValue(user);
 
-                var rating = CustomRatingForComparison;
-                if (string.IsNullOrEmpty(rating))
-                {
-                    rating = OfficialRatingForComparison;
-                }
-
-                if (string.IsNullOrEmpty(rating))
-                {
-                    Logger.LogDebug("{0} has no parental rating set.", Name);
-                }
-                else if (!isAllowed)
+                if (!isAllowed)
                 {
                     Logger.LogDebug("{0} has an unrecognized parental rating of {1}.", Name, rating);
                 }
